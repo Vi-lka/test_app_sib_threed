@@ -9,8 +9,11 @@ import { Tab, TabList, TabPanel, TabPanels, Tabs } from '@chakra-ui/react';
 import { Image as DreiImage } from '@react-three/drei'
 import AddTexture from './components/addTexture/addTexture';
 import { AddIcon } from '@chakra-ui/icons';
+import null_texture from './models/null_texture.png'
+import null_texture_normal from './models/null_texture_normal.png'
 
 function App() {
+
   const [hovered, setHovered] = useState(false)
 
   const [annotationMode, setAnnotationMode] = useState<boolean>(false);
@@ -55,11 +58,11 @@ function App() {
     const [colormap, normalmap, metalnessmap, roughnessmap, aomap] = useLoader(
       TextureLoader,
       [
-        colorMapURL ? colorMapURL : "/models/null_texture.png",
-        normalMapURL ? normalMapURL : "/models/null_texture_normal.png",
-        metalnessMapURL ? metalnessMapURL : "/models/null_texture.png",
-        roughnessMapURL ? roughnessMapURL : "/models/null_texture.png",
-        aoMapURL ? aoMapURL :"/models/null_texture.png",
+        colorMapURL ? colorMapURL : null_texture,
+        normalMapURL ? normalMapURL : null_texture_normal,
+        metalnessMapURL ? metalnessMapURL : null_texture,
+        roughnessMapURL ? roughnessMapURL : null_texture,
+        aoMapURL ? aoMapURL : null_texture,
       ]
     );
 
