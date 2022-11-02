@@ -1,38 +1,136 @@
 .App {
-  text-align: center;
+  width: 100vw;
+  height: 100vw;
 }
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
+input[type=range].Rangemap {
+  display: inline-block;
+  width: 75%;
+  vertical-align: middle;
+  -webkit-appearance: none; /* Hides the slider so that custom slider can be made */
+  background: transparent; /* Otherwise white in Chrome */
+  cursor:ew-resize;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
+/*webkit*/
+input[type=range].Rangemap::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 20px;
+  height: 20px;
+  border-radius: 16px;
+  background: #319795;
+  border: none;
+  box-shadow: 0 0 2px black;
+  margin-top: calc(max((8px - 1px - 1px) * 0.5,0px) - 20px * 0.5);
 }
 
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
+input[type=range].Rangemap::-webkit-slider-runnable-track {
+  height: 8px;
+  border: 1px solid #b2b2b2;
+  border-radius: 8px;
+  background: #f0f0f0;
+  box-shadow: none;
 }
 
-.App-link {
-  color: #61dafb;
+input[type=range].Rangemap::-webkit-slider-thumb:hover {
+  background: #2b8381;
 }
 
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+input[type=range].Rangemap:hover::-webkit-slider-runnable-track {
+  background: #e5e5e5;
+  border-color: #9a9a9a;
+}
+
+input[type=range].Rangemap::-webkit-slider-thumb:active {
+  background: #35a7a5;
+}
+
+input[type=range].Rangemap:active::-webkit-slider-runnable-track {
+  background: #f5f5f5;
+  border-color: #c1c1c1;
+}
+
+/*mozilla*/
+input[type=range].Rangemap::-moz-range-thumb {
+  width: 20px;
+  height: 20px;
+  border-radius: 16px;
+  background: #319795;
+  border: none;
+  box-shadow: 0 0 2px black;
+}
+
+input[type=range].Rangemap::-moz-range-track {
+  height: max(calc(8px - 1px - 1px),0px);
+  border: 1px solid #b2b2b2;
+  border-radius: 8px;
+  background: #f0f0f0;
+  box-shadow: none;
+}
+
+input[type=range].Rangemap::-moz-range-thumb:hover {
+  background: #2b8381;
+}
+
+input[type=range].Rangemap:hover::-moz-range-track {
+  background: #e5e5e5;
+  border-color: #9a9a9a;
+}
+
+input[type=range].Rangemap::-moz-range-thumb:active {
+  background: #35a7a5;
+}
+
+input[type=range].Rangemap:active::-moz-range-track {
+  background: #f5f5f5;
+  border-color: #c1c1c1;
+}
+
+/*ms*/
+input[type=range].Rangemap::-ms-fill-upper {
+  background: transparent;
+  border-color: transparent;
+}
+
+input[type=range].Rangemap::-ms-fill-lower {
+  background: transparent;
+  border-color: transparent;
+}
+
+input[type=range].Rangemap::-ms-thumb {
+  width: 20px;
+  height: 20px;
+  border-radius: 16px;
+  background: #319795;
+  border: none;
+  box-shadow: 0 0 2px black;
+  margin-top: 0;
+  box-sizing: border-box;
+}
+
+input[type=range].Rangemap::-ms-track {
+  height: 8px;
+  border-radius: 8px;
+  background: #f0f0f0;
+  border: 1px solid #b2b2b2;
+  box-shadow: none;
+  box-sizing: border-box;
+}
+
+input[type=range].Rangemap::-ms-thumb:hover {
+  background: #2b8381;
+}
+
+input[type=range].Rangemap:hover::-ms-track {
+  background: #e5e5e5;
+  border-color: #9a9a9a;
+}
+
+input[type=range].Rangemap::-ms-thumb:active {
+  background: #35a7a5;
+}
+
+input[type=range].Rangemap:active::-ms-track {
+  background: #f5f5f5;
+  border-color: #c1c1c1;
 }
