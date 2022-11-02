@@ -1,0 +1,15 @@
+{
+  "files": {
+    "main.css": "/test_app_sib_threed/static/css/main.73cc4c16.css",
+    "main.js": "/test_app_sib_threed/static/js/main.1d8478b1.js",
+    "static/js/787.63e8970d.chunk.js": "/test_app_sib_threed/static/js/787.63e8970d.chunk.js",
+    "index.html": "/test_app_sib_threed/index.html",
+    "main.73cc4c16.css.map": "/test_app_sib_threed/static/css/main.73cc4c16.css.map",
+    "main.1d8478b1.js.map": "/test_app_sib_threed/static/js/main.1d8478b1.js.map",
+    "787.63e8970d.chunk.js.map": "/test_app_sib_threed/static/js/787.63e8970d.chunk.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.73cc4c16.css",
+    "static/js/main.1d8478b1.js"
+  ]
+}
