@@ -1,7 +1,7 @@
 {
   "name": "test_app_sib_threed",
   "version": "0.1.0",
-  "homepage": "https://Vi-lka.github.io/test_app_sib_threed",
+  "homepage": "https://vi-lka.github.io/test_app_sib_threed",
   "private": true,
   "dependencies": {
     "@chakra-ui/icons": "^2.0.11",
