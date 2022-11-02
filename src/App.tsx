@@ -56,6 +56,8 @@ function App() {
 
     const state = useThree()
 
+    const { width, height } = state.viewport
+
     const [colormap, normalmap, metalnessmap, roughnessmap, aomap] = useLoader(
       TextureLoader,
       [
@@ -106,6 +108,9 @@ function App() {
       }
     });
 
+    const sceneBox = new THREE.Box3().setFromObject( gltf.scene ); 
+    const sceneSize = sceneBox.getSize(new THREE.Vector3());
+
     const geometry = new THREE.BufferGeometry();
     geometry.setFromPoints( [ new THREE.Vector3(), new THREE.Vector3() ] );
     const line = new THREE.Line( geometry, new THREE.LineBasicMaterial({color: 0x000000}) );
@@ -134,7 +139,7 @@ function App() {
 
     function placeAnnotation() {
       // refDreiImage.current!.position.copy(n)
-      setAnnotationPos(p)
+      setAnnotationPos(n)
     }
 
     useEffect(() => {
@@ -161,7 +166,7 @@ function App() {
   
           n = intersects[ 0 ]!.face!.normal.clone();
           n.transformDirection( intersects[ 0 ]!.object.matrixWorld );
-          n.multiplyScalar( 0.01 );
+          n.multiplyScalar( 0.04*((sceneSize.x + sceneSize.y + sceneSize.z)/3) );
           n.add( intersects[ 0 ]!.point );
   
           intersection.normal.copy( intersects[ 0 ]!.face!.normal );
@@ -196,7 +201,7 @@ function App() {
               ref={occludeRef}
               object={gltf.scene}
               position={[0, 0, 0]}
-              scale={0.05}
+              scale={1}
               receiveShadow
               castShadow
             />
@@ -208,8 +213,8 @@ function App() {
             url={annotation_icon}
             transparent 
             opacity={1}
-            position={[annotationPos.x*1.1, annotationPos.y*1.1, annotationPos.z*1.1]}
-            scale={(0.03)}
+            position={[annotationPos.x, annotationPos.y, annotationPos.z]}
+            scale={((sceneSize.x + sceneSize.y + sceneSize.z)/3)/15}
             // onPointerOver={() => setHovered(true)}
             // onPointerOut={() => setHovered(false)}
           />
@@ -219,11 +224,11 @@ function App() {
   }
   return (
     <div className="App">
-      <div className="flex flex-row-reverse">
+      <div className="flex flex-row-reverse items-center justify-center h-screen">
 
         {!modelURL && (
           <>
-            <div className="flex justify-center mb-6 flex-wrap">
+            <div className="flex justify-center ml-6 flex-wrap">
               <label className="fileInputLabelmap" htmlFor="fileInputModel">
                 <AddIcon 
                   w={8} 
@@ -280,7 +285,7 @@ function App() {
                       }
                     >
                       <ambientLight intensity={1} />
-                          <Scene />
+                      <Scene />
                       
                       {
                         // (!annotationMode) && (
