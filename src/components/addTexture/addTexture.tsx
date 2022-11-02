@@ -5,8 +5,10 @@ export type AddTextureProps = {
     Name: string;
     Map: string | null;
     MapURL: string;
+    htmlForID: string;
     handleOnChange: any;
     settings?: boolean;
+    htmlForIDSetting?: string;
     settingsValue?: string;
     handleOnChangeSettings?: any;
 }
@@ -15,7 +17,7 @@ export default function addTexture(props: AddTextureProps) {
   return (
     <>
         <div className="editFormGroup">
-            <label className="fileInputLabelmap" htmlFor="fileInputColorMap">
+            <label className="fileInputLabelmap" htmlFor={props.htmlForID}>
                 <AddIcon 
                     w={8} 
                     h={8}
@@ -45,14 +47,14 @@ export default function addTexture(props: AddTextureProps) {
             <input
                 type="file"
                 accept="image/jpeg,image/png"
-                id="fileInputColorMap"
+                id={props.htmlForID}
                 style={{ display: "none" }}
                 onChange={props.handleOnChange}
             />
 
             {props.settings && (
                 <>
-                    <label className="InputLabelmap" htmlFor="InputMetalness">
+                    <label className="InputLabelmap" htmlFor={props.htmlForIDSetting}>
                         Изменить:
                     </label>
                     <div className="InputDiv">
@@ -70,7 +72,7 @@ export default function addTexture(props: AddTextureProps) {
                             className="Inputmap"
                             type="number"
                             placeholder="Set Metalness"
-                            id="InputMetalness"
+                            id={props.htmlForIDSetting}
                             value={props.settingsValue}
                             min="0"
                             max="1"

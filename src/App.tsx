@@ -361,7 +361,8 @@ function App() {
                             <AddTexture 
                               Name={"Base Color Map"} 
                               Map={colorMapURL} 
-                              MapURL={colorMapURL} 
+                              MapURL={colorMapURL}
+                              htmlForID="base_color_map" 
                               handleOnChange={(e: any) => {
                                 setcolorMap(e.target.files![0]);
                                 setcolorMapURL(URL.createObjectURL(e.target.files![0]!));
@@ -372,6 +373,7 @@ function App() {
                               Name={"Normal Map"} 
                               Map={normalMapURL} 
                               MapURL={normalMapURL} 
+                              htmlForID="normal_map" 
                               handleOnChange={(e: any) => {
                                 setnormalMap(e.target.files![0]);
                                 setnormalMapURL(URL.createObjectURL(e.target.files![0]!));
@@ -382,11 +384,13 @@ function App() {
                               Name={"Metalness Map"} 
                               Map={metalnessMapURL} 
                               MapURL={metalnessMapURL} 
+                              htmlForID="metalness_map" 
                               handleOnChange={(e: any) => {
                                 setmetalnessMap(e.target.files![0]);
                                 setmetalnessMapURL(URL.createObjectURL(e.target.files![0]!));
                               }}
                               settings={true}
+                              htmlForIDSetting="metalness_value"
                               settingsValue={metalness}
                               handleOnChangeSettings={(e: any) => {setMetalness(e.target.value)}}
                             />
@@ -395,11 +399,13 @@ function App() {
                               Name={"Roughness Map"} 
                               Map={roughnessMapURL} 
                               MapURL={roughnessMapURL} 
+                              htmlForID="roughness_map" 
                               handleOnChange={(e: any) => {
                                 setroughnessMap(e.target.files![0]);
                                 setroughnessMapURL(URL.createObjectURL(e.target.files![0]!));
                               }}
                               settings={true}
+                              htmlForIDSetting="roughness_value" 
                               settingsValue={roughness}
                               handleOnChangeSettings={(e: any) => {setRoughness(e.target.value)}}
                             />  
@@ -408,6 +414,7 @@ function App() {
                               Name={"Ambient Occlusion Map"} 
                               Map={aoMapURL} 
                               MapURL={aoMapURL} 
+                              htmlForID="ao_map"
                               handleOnChange={(e: any) => {
                                 setaoMap(e.target.files![0]);
                                 setaoMapURL(URL.createObjectURL(e.target.files![0]!));

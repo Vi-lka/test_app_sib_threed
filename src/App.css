@@ -3,6 +3,128 @@
   height: 100vw;
 }
 
+
+
+.editForm3DSettings {
+  scrollbar-color: rgb(212 212 212) rgb(45 212 191);
+  scrollbar-width: thin;
+}
+
+.editForm3DSettings::-webkit-scrollbar {
+  width: 10px;
+}
+
+.editForm3DSettings::-webkit-scrollbar-track {
+  background-color: rgb(212 212 212);
+}
+
+
+.editForm3DSettings::-webkit-scrollbar-thumb {
+  background-color: rgb(45 212 191);
+  border-radius: 100px;
+}
+
+.editFormGroup {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  margin-bottom: 25px;
+  border-bottom: 2px solid #319795;
+  padding-bottom: 25px;
+}
+
+.fileInputLabelmap {
+  font-size: 16px;
+  color: #000000;
+  display: flex;
+  align-items:center;
+  cursor: pointer;
+}
+
+.fileInputImgmap {
+  width: 40px;
+  height: 40px;
+  margin-right: 5px;
+  margin-left: 5px;
+  cursor: pointer;
+}
+
+.InputLabelmap {
+  font-size: 16px;
+  color: #000000;
+  display: flex;
+  align-items:center;
+  margin-top: 25px;
+}
+
+.InputDiv {
+  display: flex;
+  width: 100%;
+  justify-content: space-between;
+}
+
+.Inputmap {
+  font-size: 14px;
+  color:#202020;
+  display: inline-block;
+  width: 20%;
+  min-width: 45px;
+  height: 30px;
+  vertical-align: middle;
+  border: none;
+  border-radius: 3px;
+  padding: 4px 5px;
+  background-color:#f0f0f0;
+}
+
+.ScreenShotPhoto {
+  width: 100%;
+  height: auto;
+  margin: 0 auto;
+}
+
+.ScreenShot {
+  display: flex;
+  width: auto;
+  height: 46px;
+  align-items: center;
+  padding: 4px 15px;
+  margin: 0 auto;
+  margin-bottom: 25px;
+  color: #f0f0f0;
+  background-color:#e83c07;
+  font-size: 16px;
+  font-weight: 500;
+  border: 1px solid transparent;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: ease-in-out 0.2s;
+}
+
+.ScreenShotIcon {
+  width: 38px;
+  height: auto;
+  padding: 5px;
+  border-radius: 5px;
+  margin-right: 10px;
+  cursor: pointer;
+  transition: ease-in-out 0.2s;
+}
+
+.ScreenShot:hover,
+.ScreenShot:focus {
+  padding: 4px 24px;
+  transition: ease-in-out 0.2s;
+}
+
+.ScreenShot:hover .ScreenShotIcon,
+.ScreenShot:focus .ScreenShotIcon {
+  background-color:#202020;
+  padding: 8px;
+  border-radius: 10px;
+  transition: ease-in-out 0.2s;
+}
+
 input[type=range].Rangemap {
   display: inline-block;
   width: 75%;
