@@ -11,6 +11,7 @@ import AddTexture from './components/addTexture/addTexture';
 import { AddIcon } from '@chakra-ui/icons';
 import null_texture from './models/null_texture.png'
 import null_texture_normal from './models/null_texture_normal.png'
+import annotation_icon from './models/annotation-icon.png'
 
 function App() {
 
@@ -204,11 +205,11 @@ function App() {
         {annotationPos && 
           <DreiImage 
             ref={refDreiImage} 
-            url="/models/annotation-icon.png" 
+            url={annotation_icon}
             transparent 
             opacity={1}
             position={[annotationPos.x*1.1, annotationPos.y*1.1, annotationPos.z*1.1]}
-            scale={(0.003)}
+            scale={(0.03)}
             // onPointerOver={() => setHovered(true)}
             // onPointerOut={() => setHovered(false)}
           />
