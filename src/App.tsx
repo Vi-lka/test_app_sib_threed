@@ -4,7 +4,7 @@ import './App.css';
 import * as THREE from "three";
 import { TextureLoader } from "three/src/loaders/TextureLoader";
 import { Canvas, useFrame, useLoader, useThree } from '@react-three/fiber';
-import { Bounds, Center as DreiCenter, Environment, Html, Loader, OrbitControls, Preload, useGLTF } from '@react-three/drei';
+import { Bounds, Center as DreiCenter, Environment, Float, Html, Lightformer, Loader, OrbitControls, Preload, useGLTF } from '@react-three/drei';
 import { Tab, TabList, TabPanel, TabPanels, Tabs } from '@chakra-ui/react';
 import { Image as DreiImage } from '@react-three/drei'
 import AddTexture from './components/addTexture/addTexture';
@@ -12,6 +12,13 @@ import { AddIcon } from '@chakra-ui/icons';
 import null_texture from './models/null_texture.png'
 import null_texture_normal from './models/null_texture_normal.png'
 import annotation_icon from './models/annotation-icon.png'
+import px from './models/px.png'
+import py from './models/py.png'
+import pz from './models/pz.png'
+import nx from './models/nx.png'
+import ny from './models/ny.png'
+import nz from './models/nz.png'
+import { Color, Depth, LayerMaterial } from 'lamina';
 
 function App() {
 
@@ -22,7 +29,6 @@ function App() {
   const [annotationPos, setAnnotationPos] = useState<THREE.Vector3>();
   const [occlude, setOcclude] = useState<boolean>();
   const occludeRef = createRef<THREE.Object3D<Event>>();
-  
   
   const [screenshot, setScreenshot] = useState<any | null>(null);
 
@@ -76,7 +82,7 @@ function App() {
     aomap!.flipY = false;
 
     let myMaterial = new THREE.MeshPhysicalMaterial({
-      color: "#7a7a7a",
+      color: "#000",
       map: colormap,
       normalMap: normalmap,
       metalnessMap: metalnessmap,
@@ -131,9 +137,17 @@ function App() {
     let p = new THREE.Vector3
     let n = new THREE.Vector3
 
+    let moved = false;
+
+    window.addEventListener( 'pointermove', function () {
+
+      moved = false;
+
+    } );
+
     window.addEventListener( 'dblclick', function ( ) {
 
-        if ( annotationMode && intersection.intersects ) placeAnnotation();
+        if ( annotationMode && (moved === false) && intersection.intersects ) placeAnnotation();
         
     } );
 
@@ -150,7 +164,7 @@ function App() {
 
       annotationPos && refDreiImage.current!.lookAt(state.camera.position)
 
-      if (annotationMode) {
+      if (annotationMode && (moved === false)) {
 
         state.raycaster.intersectObject( gltf.scene.children[0]!, true, intersects )
 
@@ -212,13 +226,15 @@ function App() {
             ref={refDreiImage} 
             url={annotation_icon}
             transparent 
-            opacity={1}
+            opacity={0.8}
             position={[annotationPos.x, annotationPos.y, annotationPos.z]}
             scale={((sceneSize.x + sceneSize.y + sceneSize.z)/3)/15}
             // onPointerOver={() => setHovered(true)}
             // onPointerOut={() => setHovered(false)}
           />
         }
+
+        <OrbitControls enableDamping={true} dampingFactor={0.2} onChange={(e: any) => {moved = true}} onEnd={(e: any) => {moved = false}}/>
       </>
     );
   }
@@ -270,6 +286,7 @@ function App() {
                       position: [0, 0, 10],
                     }}
                     gl={{ preserveDrawingBuffer: true, antialias: true }}
+                    dpr={[1, 1.5]}
                     onCreated={({ gl, events, scene, camera, raycaster }) => { 
                     }}
                   >
@@ -284,8 +301,28 @@ function App() {
                         </Html>
                       }
                     >
-                      <ambientLight intensity={1} />
+                    
+                      {/* <ambientLight intensity={1} /> */}
+
+                      <Environment resolution={256}>
+                        {/* Ceiling */}
+                        {/* <Lightformer intensity={3} rotation-x={Math.PI / 2} position={[0, 10, 0]} scale={[10, 10, 1]} />
+                        <Lightformer intensity={3} rotation-x={-Math.PI / 2} position={[0, -10, 0]} scale={[10, 10, 1]} /> */}
+                        {/* Sides */}
+                        {/* <Lightformer  intensity={3} rotation-y={Math.PI / 2} position={[-10, 0, -1]} scale={[20, 1, 1]} />
+                        <Lightformer  intensity={3} rotation-y={-Math.PI / 2} position={[10, 0, 1]} scale={[20, 1, 1]} /> */}
+
+                        {/* Background */}
+                        <mesh scale={100}>
+                          <sphereGeometry args={[1, 64, 64]} />
+                          <LayerMaterial side={THREE.BackSide}>
+                            <Color color="#FDB813" alpha={0.4} mode="normal" />
+                            <Depth colorA="#f0f0f0" colorB="#f0f0f0" alpha={0.5} mode="normal" near={0} far={300} origin={[100, 100, 100]} />
+                          </LayerMaterial>
+                        </mesh>
+                      </Environment>
                       <Scene />
+                      
                       
                       {
                         // (!annotationMode) && (
@@ -305,8 +342,7 @@ function App() {
                           // </Html>
                         // )
                       }
-                      <OrbitControls />
-                      <Environment preset="warehouse" />
+                      
                       <Preload all />
                     </Suspense>
                   </Canvas>
