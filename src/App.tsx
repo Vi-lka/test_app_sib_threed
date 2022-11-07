@@ -235,6 +235,7 @@ function App() {
             url={annotation_icon}
             positions={annotationsPositions}
             scale={((sceneSize.x + sceneSize.y + sceneSize.z) / 3) / 15}
+            sceneSize={sceneSize}
             opacity={0.8}
           />
 
