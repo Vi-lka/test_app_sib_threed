@@ -4,31 +4,29 @@ import './App.css';
 import * as THREE from "three";
 import { TextureLoader } from "three/src/loaders/TextureLoader";
 import { Canvas, useFrame, useLoader, useThree } from '@react-three/fiber';
-import { Bounds, Center as DreiCenter, Environment, Float, Html, Lightformer, Loader, OrbitControls, Preload, useGLTF } from '@react-three/drei';
-import { Tab, TabList, TabPanel, TabPanels, Tabs } from '@chakra-ui/react';
+import { Bounds, Center as DreiCenter, Environment, Float, Html, Lightformer, Loader, OrbitControls, Preload, useGLTF, useProgress } from '@react-three/drei';
+import { Tab, TabList, TabPanel, TabPanels, Tabs, useToast } from '@chakra-ui/react';
 import { Image as DreiImage } from '@react-three/drei'
 import AddTexture from './components/addTexture/addTexture';
 import { AddIcon } from '@chakra-ui/icons';
 import null_texture from './models/null_texture.png'
 import null_texture_normal from './models/null_texture_normal.png'
 import annotation_icon from './models/annotation-icon.png'
-import px from './models/px.png'
-import py from './models/py.png'
-import pz from './models/pz.png'
-import nx from './models/nx.png'
-import ny from './models/ny.png'
-import nz from './models/nz.png'
 import { Color, Depth, LayerMaterial } from 'lamina';
+import AnnotationsMap from './components/annotationsMap/AnnotationsMap';
 
 function App() {
 
   const [hovered, setHovered] = useState(false)
 
+  const [counter, setCounter] = useState<number>(0);
+  const maxCounter = 10
+  const [annotationsPositions, setaAnnotationsPositions] = useState<Array<THREE.Vector3>>([]);
+
   const [annotationMode, setAnnotationMode] = useState<boolean>(false);
-  const [annotationOpened, setAnnotationOpened] = useState<boolean>(false);
-  const [annotationPos, setAnnotationPos] = useState<THREE.Vector3>();
-  const [occlude, setOcclude] = useState<boolean>();
   const occludeRef = createRef<THREE.Object3D<Event>>();
+
+  const [loadingState, setloadingState] = useState<boolean>(true);
   
   const [screenshot, setScreenshot] = useState<any | null>(null);
 
@@ -55,10 +53,13 @@ function App() {
 
   const [uploading, setUploading] = useState<boolean>(false);
 
+  const { active } = useProgress()
+
+  const toast = useToast();
+
   // create Scene to set model and properties
   // non-null assertion operator ! - to prevent [Object is possibly 'null' or 'undefined']
   function Scene() {
-    const refDreiImage = createRef<THREE.Mesh<THREE.BufferGeometry, THREE.Material | THREE.Material[]>>()
 
     const state = useThree()
 
@@ -147,13 +148,22 @@ function App() {
 
     window.addEventListener( 'dblclick', function ( ) {
 
-        if ( annotationMode && (moved === false) && intersection.intersects ) placeAnnotation();
+        if ( annotationMode && (moved === false) && intersection.intersects && (counter < maxCounter) ) placeAnnotation();
         
     } );
 
     function placeAnnotation() {
-      // refDreiImage.current!.position.copy(n)
-      setAnnotationPos(n)
+      if (counter === (maxCounter - 1)) {
+        toast({
+          title: "Ограничено",
+          description: `Можно добавлять не более ${maxCounter} аннотаций`,
+          status: "warning",
+          duration: 4000,
+          isClosable: true,
+        });
+      }
+      setCounter(counter + 1)
+      annotationsPositions[counter] = n
     }
 
     useEffect(() => {
@@ -161,8 +171,7 @@ function App() {
     }, [hovered])
 
     useFrame((state) => {
-
-      annotationPos && refDreiImage.current!.lookAt(state.camera.position)
+      setloadingState(active)
 
       if (annotationMode && (moved === false)) {
 
@@ -221,20 +230,15 @@ function App() {
             />
           </DreiCenter>
         </Bounds>
-        {annotationPos && 
-          <DreiImage 
-            ref={refDreiImage} 
+        <AnnotationsMap
+            range={counter}
             url={annotation_icon}
-            transparent 
+            positions={annotationsPositions}
+            scale={((sceneSize.x + sceneSize.y + sceneSize.z) / 3) / 15}
             opacity={0.8}
-            position={[annotationPos.x, annotationPos.y, annotationPos.z]}
-            scale={((sceneSize.x + sceneSize.y + sceneSize.z)/3)/15}
-            // onPointerOver={() => setHovered(true)}
-            // onPointerOut={() => setHovered(false)}
           />
-        }
 
-        <OrbitControls enableDamping={true} dampingFactor={0.2} onChange={(e: any) => {moved = true}} onEnd={(e: any) => {moved = false}}/>
+        <OrbitControls enableDamping={false} onChange={(e: any) => {moved = true}} onEnd={(e: any) => {moved = false}}/>
       </>
     );
   }
@@ -303,7 +307,7 @@ function App() {
                     >
                     
                       {/* <ambientLight intensity={1} /> */}
-
+                      <Scene />
                       <Environment resolution={256}>
                         {/* Ceiling */}
                         {/* <Lightformer intensity={3} rotation-x={Math.PI / 2} position={[0, 10, 0]} scale={[10, 10, 1]} />
@@ -321,7 +325,7 @@ function App() {
                           </LayerMaterial>
                         </mesh>
                       </Environment>
-                      <Scene />
+                      
                       
                       
                       {
@@ -389,6 +393,7 @@ function App() {
                           Materials
                         </Tab>
                         <Tab 
+                          isDisabled={loadingState}
                           _selected={{ color: 'white', bg: 'teal.500' }}
                           onClick={(e: any) => {setAnnotationMode(true)}}
                         >
