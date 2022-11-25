@@ -15,7 +15,7 @@
 }
 
 .editForm3DSettings::-webkit-scrollbar {
-  width: 10px;
+  width: 7px;
 }
 
 .editForm3DSettings::-webkit-scrollbar-track {
@@ -259,4 +259,72 @@ input[type=range].Rangemap::-ms-thumb:active {
 input[type=range].Rangemap:active::-ms-track {
   background: #f5f5f5;
   border-color: #c1c1c1;
+}
+
+.annotation {
+  display: none;
+  pointer-events: all;
+  scrollbar-color: rgb(212 212 212) rgb(45 212 191);
+  scrollbar-width: thin;
+  /* user-select: none; standard syntax */
+  /* -webkit-user-select: none; webkit (safari, chrome) browsers */
+  /* -moz-user-select: none; mozilla browsers */
+  /* -khtml-user-select: none; webkit (konqueror) browsers */
+  /* -ms-user-select: none; IE10+ */
+}
+
+.annotation::-webkit-scrollbar {
+  width: 5px;
+}
+
+.annotation::-webkit-scrollbar-track {
+  background-color: rgb(212 212 212);
+}
+
+
+.annotation::-webkit-scrollbar-thumb {
+  background-color: rgb(45 212 191);
+  border-radius: 100px;
+}
+
+.delete_icon {
+  width: 20%;
+  max-width: 30px;
+  max-height: 20px;
+  min-width: 27px;
+  min-height: 17px;
+  margin-right: 0;
+  margin-left: auto;
+  background-color:#ffffff;
+  border-radius: 5px;
+  padding: 1px 6px;
+  margin: 3px;
+  transition: all ease-in-out 0.15s;
+  cursor: pointer;
+}
+
+.delete_icon:hover,
+.delete_icon:focus {
+  background-color:#e01414;
+  transition: all ease-in-out 0.15s;
+}
+
+.visible {
+  display: block !important;
+  /* background-color:#e83c07; */
+}
+.hide {
+  display: none !important;
+}
+
+.selected {
+  background-color: rgb(13 148 136);
+}
+
+.selected p {
+  color: #fff;
+}
+
+.annotationsSettingsFocus {
+  background-color: rgb(191, 200, 211);
 }

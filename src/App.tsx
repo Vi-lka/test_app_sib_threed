@@ -1,10 +1,10 @@
-import React, { createRef, Suspense, useEffect, useState } from 'react';
+import React, { createRef, Suspense, useEffect, useRef, useState } from 'react';
 import logo from './logo.svg';
 import './App.css';
 import * as THREE from "three";
 import { TextureLoader } from "three/src/loaders/TextureLoader";
 import { Canvas, useFrame, useLoader, useThree } from '@react-three/fiber';
-import { Bounds, Center as DreiCenter, Environment, Float, Html, Lightformer, Loader, OrbitControls, Preload, useGLTF, useProgress } from '@react-three/drei';
+import { Bounds, Center as DreiCenter, Environment, Float, Html, Lightformer, Loader, OrbitControls, Preload, useBounds, useGLTF, useProgress } from '@react-three/drei';
 import { Tab, TabList, TabPanel, TabPanels, Tabs, useToast } from '@chakra-ui/react';
 import { Image as DreiImage } from '@react-three/drei'
 import AddTexture from './components/addTexture/addTexture';
@@ -12,59 +12,71 @@ import { AddIcon } from '@chakra-ui/icons';
 import null_texture from './models/null_texture.png'
 import null_texture_normal from './models/null_texture_normal.png'
 import annotation_icon from './models/annotation-icon.png'
+import delete_icon from './models/delete-icon.png'
 import { Color, Depth, LayerMaterial } from 'lamina';
 import AnnotationsMap from './components/annotationsMap/AnnotationsMap';
+import { Console } from 'console';
 
 function App() {
 
-  const [hovered, setHovered] = useState(false)
+  // set Loading
+  const { active } = useProgress()
+  const [loadingState, setloadingState] = useState<boolean>(true)
 
-  const [counter, setCounter] = useState<number>(0);
-  const maxCounter = 10
-  const [annotationsPositions, setaAnnotationsPositions] = useState<Array<THREE.Vector3>>([]);
-
-  const [annotationMode, setAnnotationMode] = useState<boolean>(false);
-  const occludeRef = createRef<THREE.Object3D<Event>>();
-
-  const [loadingState, setloadingState] = useState<boolean>(true);
-  
-  const [screenshot, setScreenshot] = useState<any | null>(null);
-
-  const [model, setModel] = useState<any | null>(null);
-  const [modelURL, setModelURL] = useState("");
+  // set Model
+  const [model, setModel] = useState<any | null>(null)
+  const [modelURL, setModelURL] = useState("")
 
   // set Maps for 3D-Model
-  const [colorMap, setcolorMap] = useState<any | null>(null);
-  const [colorMapURL, setcolorMapURL] = useState("");
+  const [colorMap, setcolorMap] = useState<any | null>(null)
+  const [colorMapURL, setcolorMapURL] = useState("")
 
-  const [normalMap, setnormalMap] = useState<any | null>(null);
-  const [normalMapURL, setnormalMapURL] = useState("");
+  const [normalMap, setnormalMap] = useState<any | null>(null)
+  const [normalMapURL, setnormalMapURL] = useState("")
 
-  const [metalnessMap, setmetalnessMap] = useState<any | null>(null);
-  const [metalnessMapURL, setmetalnessMapURL] = useState("");
-  const [metalness, setMetalness] = useState("0");
+  const [metalnessMap, setmetalnessMap] = useState<any | null>(null)
+  const [metalnessMapURL, setmetalnessMapURL] = useState("")
+  const [metalness, setMetalness] = useState("0")
 
-  const [roughnessMap, setroughnessMap] = useState<any | null>(null);
-  const [roughnessMapURL, setroughnessMapURL] = useState("");
-  const [roughness, setRoughness] = useState("1");
+  const [roughnessMap, setroughnessMap] = useState<any | null>(null)
+  const [roughnessMapURL, setroughnessMapURL] = useState("")
+  const [roughness, setRoughness] = useState("1")
 
-  const [aoMap, setaoMap] = useState<any | null>(null);
-  const [aoMapURL, setaoMapURL] = useState("");
+  const [aoMap, setaoMap] = useState<any | null>(null)
+  const [aoMapURL, setaoMapURL] = useState("")
 
-  const [uploading, setUploading] = useState<boolean>(false);
+  const [annotationMode, setAnnotationMode] = useState<boolean>(false)
 
-  const { active } = useProgress()
+  // set Screenshot 
+  const [screenshot, setScreenshot] = useState<any | null>(null)
 
-  const toast = useToast();
+  // Annotations states
+  const [counter, setCounter] = useState<number>(0)
+  const maxCounter = 10
+  const [annotations, setAnnotations] = useState<Array<{position?: THREE.Vector3, title?: string, info?: string}>>([])
+  const annotationsSettingsRefs = annotations.map(() => createRef<HTMLDivElement>());
 
-  // create Scene to set model and properties
-  // non-null assertion operator ! - to prevent [Object is possibly 'null' or 'undefined']
+  const [selectedAnnotation, setSelectedAnnotation] = useState<number>((counter - 1))
+
+  function handleDeleteAnnotation(data: any, i: number) {
+    
+    setCounter(counter - 1)
+
+    let filteredAnnotations = annotations.filter(item => item !== annotations[i])
+    setAnnotations(filteredAnnotations)
+
+  }
+
   function Scene() {
 
-    const state = useThree()
+    const stateThree = useThree()
 
-    const { width, height } = state.viewport
+    const toast = useToast()
+    const idToast = 'id-toast'
 
+    const [textHovered, setTextHovered] = useState(false)
+
+    // Model Settings
     const [colormap, normalmap, metalnessmap, roughnessmap, aomap] = useLoader(
       TextureLoader,
       [
@@ -74,13 +86,13 @@ function App() {
         roughnessMapURL ? roughnessMapURL : null_texture,
         aoMapURL ? aoMapURL : null_texture,
       ]
-    );
-
-    colormap!.flipY = false;
-    normalmap!.flipY = false;
-    metalnessmap!.flipY = false;
-    roughnessmap!.flipY = false;
-    aomap!.flipY = false;
+    )
+  
+    colormap!.flipY = false
+    normalmap!.flipY = false
+    metalnessmap!.flipY = false
+    roughnessmap!.flipY = false
+    aomap!.flipY = false
 
     let myMaterial = new THREE.MeshPhysicalMaterial({
       color: "#000",
@@ -91,18 +103,18 @@ function App() {
       roughnessMap: roughnessmap,
       roughness: parseFloat(roughness),
       aoMap: aomap,
-    });
+    })
 
-    // const fbx = useLoader(FBXLoader, `${model3d.data!.model}`);
+    // const fbx = useLoader(FBXLoader, `${model3d.data!.model}`)
     // fbx.traverse(function (child) {
     //   if ((child as THREE.Mesh).isMesh) {
     //     (child as THREE.Mesh).material = material;
     //     (child as THREE.Mesh).castShadow = true;
     //     (child as THREE.Mesh).receiveShadow = true;
     //   }
-    // });
+    // })
 
-    const gltf = useGLTF(`${modelURL}`);
+    const gltf = useGLTF(`${modelURL}`)
     gltf.scene.traverse( function (object: any) {
       if (object instanceof THREE.Mesh) {
         colorMapURL && (object.material.map = myMaterial.map);
@@ -113,19 +125,20 @@ function App() {
         roughness && (object.material.roughness = myMaterial.roughness);
         aoMapURL && (object.material.aoMap = myMaterial.aoMap);
       }
-    });
+    })
 
-    const sceneBox = new THREE.Box3().setFromObject( gltf.scene ); 
-    const sceneSize = sceneBox.getSize(new THREE.Vector3());
+    // ReyCasting settings
+    const sceneBox = new THREE.Box3().setFromObject( gltf.scene )
+    const sceneSize = sceneBox.getSize(new THREE.Vector3())
 
-    const geometry = new THREE.BufferGeometry();
-    geometry.setFromPoints( [ new THREE.Vector3(), new THREE.Vector3() ] );
-    const line = new THREE.Line( geometry, new THREE.LineBasicMaterial({color: 0x000000}) );
-    // state.scene.add( line );
+    const geometry = new THREE.BufferGeometry()
+    geometry.setFromPoints( [ new THREE.Vector3(), new THREE.Vector3() ] )
+    const line = new THREE.Line( geometry, new THREE.LineBasicMaterial({color: 0x000000}) )
+    // stateThree.scene.add( line )
 
-    const mouseHelper = new THREE.Mesh( new THREE.BoxGeometry( 1, 1, 10 ), new THREE.MeshNormalMaterial() );
-    mouseHelper.visible = false;
-    state.scene.add( mouseHelper );
+    const mouseHelper = new THREE.Mesh( new THREE.BoxGeometry( 1, 1, 10 ), new THREE.MeshNormalMaterial() )
+    mouseHelper.visible = false
+    stateThree.scene.add( mouseHelper )
 
     const intersects: THREE.Intersection<THREE.Object3D<THREE.Event>>[] | undefined = []
 
@@ -138,42 +151,84 @@ function App() {
     let p = new THREE.Vector3
     let n = new THREE.Vector3
 
-    let moved = false;
+    let moved = false
 
-    window.addEventListener( 'pointermove', function () {
+    window.addEventListener( 'wheel', function () {
+      moved = true
+    } )
 
-      moved = false;
+    // Handle Place Annotation
+    stateThree.gl.domElement.addEventListener( 'dblclick', function () {
+      if ( annotationMode && (moved === false) && (intersection.intersects) && (textHovered === false) ) { 
+        handleplaceAnnotation()
+      }
+    } )
 
-    } );
+    const handleplaceAnnotation = () => {
 
-    window.addEventListener( 'dblclick', function ( ) {
+      if (counter < maxCounter) {
+        setCounter(counter + 1)
+        annotations[counter] = {position: n}
+        setSelectedAnnotation(counter)
+        setAnnotations(annotations)
+      }
 
-        if ( annotationMode && (moved === false) && intersection.intersects && (counter < maxCounter) ) placeAnnotation();
-        
-    } );
+    }
 
-    function placeAnnotation() {
-      if (counter === (maxCounter - 1)) {
+    const handleTextHovered = (e: any) => {
+      setTextHovered(e)
+    }
+
+    const handleSelectAnnotation = (value: number) => {
+      setSelectedAnnotation(value)
+    }
+
+    const handleImgAnnotationHoverEnter = (i: number) => {
+      if (i !== selectedAnnotation) {
+        annotationsSettingsRefs[i].current?.classList.add('annotationsSettingsFocus')
+      }
+    }
+
+    const handleImgAnnotationHoverLeave = (i: number) => {
+      annotationsSettingsRefs[i].current?.classList.remove('annotationsSettingsFocus')
+    }
+
+    annotationsSettingsRefs.forEach( 
+      function (element: any, index: number, array: Array<any>) {
+        if (index === selectedAnnotation) {
+          element.current?.classList.add('selected') 
+          element.current?.classList.remove('annotationsSettingsFocus')
+        } else {
+          element.current?.classList.remove('selected') 
+        }
+      }
+    )
+
+  useEffect(() => {
+    stateThree.gl.domElement.addEventListener( 'dblclick', function () {
+      if ( annotationMode && (moved === false) && (intersection.intersects) && (textHovered === false) && (counter === maxCounter) && (!toast.isActive(idToast))) {
         toast({
+          id: idToast,
           title: "Ограничено",
           description: `Можно добавлять не более ${maxCounter} аннотаций`,
           status: "warning",
-          duration: 4000,
+          duration: 5000,
           isClosable: true,
-        });
-      }
-      setCounter(counter + 1)
-      annotationsPositions[counter] = n
-    }
-
-    useEffect(() => {
-      document.body.style.cursor = hovered ? 'pointer' : 'auto'
-    }, [hovered])
+        })
+      } 
+    } )
+  }, [counter])
 
     useFrame((state) => {
+
+      console.log(selectedAnnotation)
+
+      // console.log(`moved: ${moved}`)
+      // console.log(`textHovered: ${textHovered}`)
+
       setloadingState(active)
 
-      if (annotationMode && (moved === false)) {
+      if (annotationMode && (moved === false) && (textHovered === false)) {
 
         state.raycaster.intersectObject( gltf.scene.children[0]!, true, intersects )
 
@@ -198,6 +253,8 @@ function App() {
           line.geometry.attributes.position!.setXYZ( 0, p.x, p.y, p.z );
           line.geometry.attributes.position!.setXYZ( 1, (n.x), (n.y), (n.z) );
           line.geometry.attributes.position!.needsUpdate = true;
+
+          // intersects[ 0 ]!.object.
   
           intersection.intersects = true;
   
@@ -218,10 +275,9 @@ function App() {
 
     return (
       <>
-        <Bounds fit clip observe damping={0} margin={1.2}>
+        <Bounds fit={loadingState} clip={loadingState} observe damping={0} margin={1.2}>
           <DreiCenter>
             <primitive
-              ref={occludeRef}
               object={gltf.scene}
               position={[0, 0, 0]}
               scale={1}
@@ -232,14 +288,42 @@ function App() {
         </Bounds>
         <AnnotationsMap
             range={counter}
-            url={annotation_icon}
-            positions={annotationsPositions}
+            annotationIcon={annotation_icon}
+            deleteIcon={delete_icon}
+            positions={annotations}
             scale={((sceneSize.x + sceneSize.y + sceneSize.z) / 3) / 15}
             sceneSize={sceneSize}
+            textHoverEnter={(e: any) => {
+              e.stopPropagation()
+              handleTextHovered(true)
+            }}
+            textHoverLeave={(e: any) => {
+              e.stopPropagation()
+              handleTextHovered(false)
+            }}
             opacity={0.8}
+            textHoveredState={textHovered}
+            annotationMode={annotationMode}
+            handleSelectAnnotation={handleSelectAnnotation}
+            selectedAnnotation={selectedAnnotation}
+            handleImgAnnotationHoverEnter={handleImgAnnotationHoverEnter}
+            handleImgAnnotationHoverLeave={handleImgAnnotationHoverLeave}
           />
 
-        <OrbitControls enableDamping={false} onChange={(e: any) => {moved = true}} onEnd={(e: any) => {moved = false}}/>
+        <OrbitControls 
+          enabled={!textHovered} 
+          enableDamping={false} 
+          makeDefault
+          onStart={(e: any) => {
+            moved = false
+          }} 
+          onChange={(e: any) => {
+            moved = true
+          }} 
+          onEnd={(e: any) => {
+            moved = false
+          }}
+        />
       </>
     );
   }
@@ -326,35 +410,9 @@ function App() {
                           </LayerMaterial>
                         </mesh>
                       </Environment>
-                      
-                      
-                      
-                      {
-                        // (!annotationMode) && (
-                          // <Html
-                          //   as='div' // Wrapping element (default: 'div')
-                          //   position={[-0.008497950134235694,0.02232144777527406,0.011595928672035922]}
-                          //   distanceFactor={0.06} 
-                          //   zIndexRange={[100, 0]} // Z-order range (default=[16777271, 0])
-                          //   center
-                          // >
-                            
-                          //   <button 
-                          //     className="w-7 h-7 bg-teal-400 rounded-full"
-                          //     onClick={(e: any) => {setAnnotationOpened(!annotationOpened)}}
-                          //   ></button>
-                          //   { annotationOpened && <textarea defaultValue={"Hello World"}></textarea>}
-                          // </Html>
-                        // )
-                      }
-                      
                       <Preload all />
                     </Suspense>
                   </Canvas>
-                  {/* <div className="absolute bottom-3 right-3">
-                    <label htmlFor="annotationSwitch"  className="px-2 mx-auto font-medium text-black transition-al">Добавить Аннотацию</label>
-                    <Switch id="annotationSwitch" colorScheme='teal' size='lg' onChange={(e: any) => {setAnnotationMode(!annotationMode)}}/>
-                  </div> */}
                 </div>
 
                 <form className="editForm3DSettings w-1/4 h-screen px-2 py-4 bg-neutral-50 border-r-2 border-gray-100 overflow-hidden">
@@ -470,8 +528,46 @@ function App() {
                           </div>    
                         </TabPanel>
 
-                        <TabPanel>
-                          <p>Кликните дважды в месте на модели, где хотите оставить Аннотацию.</p>
+                        <TabPanel
+                          className=""
+                        >
+                          {
+                            (counter === 0) ? (
+                              <p>Кликните дважды в месте на модели, где хотите оставить Аннотацию.</p>
+                            ) : (
+                              <div
+                                className="editForm3DSettings h-[80vh] pr-2 overflow-y-scroll"
+                              >
+                              {
+                                annotations.map((data, i) => (
+                                  <div 
+                                    key={i} 
+                                    ref={annotationsSettingsRefs[i]}
+                                    className="bg-slate-200 mb-3 cursor-pointer"
+                                    onClick={(e: any) => {
+                                      setSelectedAnnotation(i)
+                                    }}
+                                  >
+                                    <div className="flex justify-between">
+                                      <p className="text-sm m-1">
+                                        {i + 1}
+                                      </p>
+                                      <img 
+                                        src={delete_icon} 
+                                        className="delete_icon" 
+                                        alt="Delete" 
+                                        title="Delete" 
+                                        onClick={(e: any) => {
+                                          handleDeleteAnnotation(data, i)
+                                        }}
+                                      />
+                                    </div>
+                                  </div>
+                                ))
+                              }
+                              </div>
+                            )
+                          }
                         </TabPanel>
                       </TabPanels>
                     </Tabs>
