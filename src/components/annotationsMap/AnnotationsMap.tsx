@@ -7,7 +7,7 @@ export type AnnotationsMapProps = {
   range: number, 
   annotationIcon: string,
   deleteIcon: string,
-  positions: Array<{position?: THREE.Vector3, title?: string, info?: string}>,
+  annotationsData: Array<{position?: THREE.Vector3, title?: string, info?: string}>,
   scale: number,
   sceneSize: THREE.Vector3,
   textHoverEnter?: any,
@@ -29,7 +29,7 @@ export default function AnnotationsMap(props: AnnotationsMapProps) {
   // const [selectedAnnotation, setSelectedAnnotation] = useState<number>((props.range - 1))
   const [controlsChange, setControlsChange] = useState(false)
 
-  const [annotations, setAnnotations] = useState(props.positions)
+  const [annotations, setAnnotations] = useState(props.annotationsData)
 
   const textPos = ((props.sceneSize.x + props.sceneSize.y + props.sceneSize.z) / 3) / 20
 
@@ -126,26 +126,15 @@ export default function AnnotationsMap(props: AnnotationsMapProps) {
             >
                 <div 
                   ref={annotationsTextRefs[i]} 
-                  className='bg-slate-900/80 text-white p-1.5 rounded-md max-h-[240px] max-w-[200px] w-max overflow-hidden annotation overflow-y-scroll' 
+                  className='bg-slate-900/80 text-white p-1.5 rounded-md min-h-[30px] min-w-[190px] max-h-[240px] max-w-[200px] w-max overflow-hidden annotation overflow-y-scroll' 
                   onPointerOver={props.textHoverEnter}
                   onPointerOut={props.textHoverLeave}
                 >
                   <div className='bottom-0'>
                     <p className="text-sm mb-1.5">
-                      <b>Аннотация</b>
+                      <b>{data.title}</b>
                     </p>
-                    <p className='text-[10px] '>
-                      Lorem ipsum dolor sit amet, consectetur adipiscing elit. 
-                      Donec in efficitur enim, ut consectetur tellus. Donec ut diam nibh. 
-                      Proin vitae scelerisque dolor. 
-                      Vestibulum eu nunc gravida, elementum libero vitae, commodo felis. 
-                      Donec cursus in mauris quis efficitur. Praesent eu massa in nisi semper finibus. 
-                      Pellentesque hendrerit, nulla vitae sodales eleifend, ex est sodales nisl, 
-                      tempor sollicitudin mi nisl non odio. 
-                      Vivamus nisl odio, placerat a iaculis eget, fringilla vitae magna. 
-                      Suspendisse lobortis eros ac nunc facilisis eleifend. 
-                      Aliquam quis nunc in quam dapibus blandit vel at dui.
-                    </p>
+                    <p className='text-[10px]'>{data.info}</p>
                   </div>
                 </div>
             </Html>

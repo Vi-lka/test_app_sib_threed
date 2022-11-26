@@ -5,7 +5,7 @@ import * as THREE from "three";
 import { TextureLoader } from "three/src/loaders/TextureLoader";
 import { Canvas, useFrame, useLoader, useThree } from '@react-three/fiber';
 import { Bounds, Center as DreiCenter, Environment, Float, Html, Lightformer, Loader, OrbitControls, Preload, useBounds, useGLTF, useProgress } from '@react-three/drei';
-import { Tab, TabList, TabPanel, TabPanels, Tabs, useToast } from '@chakra-ui/react';
+import { Button, Input, Tab, TabList, TabPanel, TabPanels, Tabs, Textarea, useToast } from '@chakra-ui/react';
 import { Image as DreiImage } from '@react-three/drei'
 import AddTexture from './components/addTexture/addTexture';
 import { AddIcon } from '@chakra-ui/icons';
@@ -23,7 +23,7 @@ function App() {
   const { active } = useProgress()
   const [loadingState, setloadingState] = useState<boolean>(true)
 
-  // set Model
+  // set 3D-Model
   const [model, setModel] = useState<any | null>(null)
   const [modelURL, setModelURL] = useState("")
 
@@ -45,26 +45,63 @@ function App() {
   const [aoMap, setaoMap] = useState<any | null>(null)
   const [aoMapURL, setaoMapURL] = useState("")
 
-  const [annotationMode, setAnnotationMode] = useState<boolean>(false)
-
   // set Screenshot 
   const [screenshot, setScreenshot] = useState<any | null>(null)
 
-  // Annotations states
+  // set Annotation Mode 
+  const [annotationMode, setAnnotationMode] = useState<boolean>(false)
+
+  // Global Annotations states
   const [counter, setCounter] = useState<number>(0)
   const maxCounter = 10
+
   const [annotations, setAnnotations] = useState<Array<{position?: THREE.Vector3, title?: string, info?: string}>>([])
   const annotationsSettingsRefs = annotations.map(() => createRef<HTMLDivElement>());
 
   const [selectedAnnotation, setSelectedAnnotation] = useState<number>((counter - 1))
 
-  function handleDeleteAnnotation(data: any, i: number) {
+  const [updateState, setUpdateState] = useState<boolean>(false)
+
+  // Global handles
+  const handleDeleteAnnotation = (data: any, i: number) => {
     
     setCounter(counter - 1)
 
     let filteredAnnotations = annotations.filter(item => item !== annotations[i])
     setAnnotations(filteredAnnotations)
 
+  }
+
+  const handleChangeTitle = (e: any, index: number) => {
+    const changedAnnotations = annotations.map((data, i) => {
+      if (i === index) {
+        return {
+          ...data,
+          title: e.target.value
+        }
+      } else {
+        return data
+      }
+    })
+    setAnnotations(changedAnnotations)
+  }
+
+  const handleChangeInfo = (e: any, index:number) => {
+    const changedAnnotations = annotations.map((data, i) => {
+      if (i === index) {
+        return {
+          ...data,
+          info: e.target.value
+        }
+      } else {
+        return data
+      }
+    })
+    setAnnotations(changedAnnotations)
+  }
+
+  const handleSaveChanges = () => {
+    console.log(annotations)
   }
 
   function Scene() {
@@ -155,20 +192,20 @@ function App() {
 
     window.addEventListener( 'wheel', function () {
       moved = true
-    } )
+    })
 
     // Handle Place Annotation
     stateThree.gl.domElement.addEventListener( 'dblclick', function () {
       if ( annotationMode && (moved === false) && (intersection.intersects) && (textHovered === false) ) { 
-        handleplaceAnnotation()
+        handlePlaceAnnotation()
       }
-    } )
+    })
 
-    const handleplaceAnnotation = () => {
+    const handlePlaceAnnotation = () => {
 
       if (counter < maxCounter) {
         setCounter(counter + 1)
-        annotations[counter] = {position: n}
+        annotations[counter] = {position: n, title: "", info: ""}
         setSelectedAnnotation(counter)
         setAnnotations(annotations)
       }
@@ -185,19 +222,19 @@ function App() {
 
     const handleImgAnnotationHoverEnter = (i: number) => {
       if (i !== selectedAnnotation) {
-        annotationsSettingsRefs[i].current?.classList.add('annotationsSettingsFocus')
+        annotationsSettingsRefs[i].current?.classList.add('annotationsSettingsHover')
       }
     }
 
     const handleImgAnnotationHoverLeave = (i: number) => {
-      annotationsSettingsRefs[i].current?.classList.remove('annotationsSettingsFocus')
+      annotationsSettingsRefs[i].current?.classList.remove('annotationsSettingsHover')
     }
 
     annotationsSettingsRefs.forEach( 
       function (element: any, index: number, array: Array<any>) {
         if (index === selectedAnnotation) {
           element.current?.classList.add('selected') 
-          element.current?.classList.remove('annotationsSettingsFocus')
+          element.current?.classList.remove('annotationsSettingsHover')
         } else {
           element.current?.classList.remove('selected') 
         }
@@ -209,19 +246,17 @@ function App() {
       if ( annotationMode && (moved === false) && (intersection.intersects) && (textHovered === false) && (counter === maxCounter) && (!toast.isActive(idToast))) {
         toast({
           id: idToast,
-          title: "Ограничено",
+          title: "Внимание!",
           description: `Можно добавлять не более ${maxCounter} аннотаций`,
           status: "warning",
           duration: 5000,
           isClosable: true,
         })
       } 
-    } )
+    })
   }, [counter])
 
     useFrame((state) => {
-
-      console.log(selectedAnnotation)
 
       // console.log(`moved: ${moved}`)
       // console.log(`textHovered: ${textHovered}`)
@@ -290,7 +325,7 @@ function App() {
             range={counter}
             annotationIcon={annotation_icon}
             deleteIcon={delete_icon}
-            positions={annotations}
+            annotationsData={annotations}
             scale={((sceneSize.x + sceneSize.y + sceneSize.z) / 3) / 15}
             sceneSize={sceneSize}
             textHoverEnter={(e: any) => {
@@ -416,7 +451,7 @@ function App() {
                 </div>
 
                 <form className="editForm3DSettings w-1/4 h-screen px-2 py-4 bg-neutral-50 border-r-2 border-gray-100 overflow-hidden">
-                  <div className="flex justify-center mb-6 flex-wrap">
+                  <div className="flex justify-evenly mb-6 flex-wrap">
                     <label className="fileInputLabelmap" htmlFor="fileInputModel">
                       <AddIcon 
                         w={8} 
@@ -441,6 +476,10 @@ function App() {
                         setModelURL(URL.createObjectURL(e.target.files![0]!));
                       }}
                     />
+                    <Button 
+                      colorScheme='teal'
+                      onClick={handleSaveChanges}
+                    >Сохранить</Button>
                   </div>
                   <div className="mb-6">
                     <Tabs isFitted variant='enclosed'>
@@ -536,7 +575,7 @@ function App() {
                               <p>Кликните дважды в месте на модели, где хотите оставить Аннотацию.</p>
                             ) : (
                               <div
-                                className="editForm3DSettings h-[80vh] pr-2 overflow-y-scroll"
+                                className="editForm3DSettings h-[75vh] pr-2 overflow-y-scroll"
                               >
                               {
                                 annotations.map((data, i) => (
@@ -546,12 +585,11 @@ function App() {
                                     className="bg-slate-200 mb-3 cursor-pointer"
                                     onClick={(e: any) => {
                                       setSelectedAnnotation(i)
+                                      console.log(data.title)
                                     }}
                                   >
                                     <div className="flex justify-between">
-                                      <p className="text-sm m-1">
-                                        {i + 1}
-                                      </p>
+                                      <p className="text-sm m-1">{i + 1}</p>
                                       <img 
                                         src={delete_icon} 
                                         className="delete_icon" 
@@ -561,6 +599,33 @@ function App() {
                                           handleDeleteAnnotation(data, i)
                                         }}
                                       />
+                                    </div>
+                                    <div className="flex flex-col justify-center p-1">
+                                      <Input
+                                        className='mt-1 mb-1.5 focus:!bg-white hover:!bg-slate-50'
+                                        focusBorderColor='rgb(226, 232, 240)'
+                                        placeholder='Заголовок'
+                                        size='sm'
+                                        variant='filled'
+                                        value={data.title}
+                                        onChange={(e: any) => {
+                                          handleChangeTitle(e, i)
+                                        }}
+                                      />
+                                      {(i === selectedAnnotation) && 
+                                        <Textarea
+                                          className='mb-1.5 focus:!bg-white hover:!bg-slate-50 addCustomScrollbar'
+                                          focusBorderColor='rgb(226, 232, 240)'
+                                          placeholder='Описание'
+                                          size='sm'
+                                          variant='filled'
+                                          resize='vertical'
+                                          value={data.info}
+                                          onChange={(e: any) => {
+                                            handleChangeInfo(e, i)
+                                          }}
+                                        />
+                                      }
                                     </div>
                                   </div>
                                 ))

@@ -319,12 +319,33 @@ input[type=range].Rangemap:active::-ms-track {
 
 .selected {
   background-color: rgb(13 148 136);
+  border-radius: 0.125rem;
 }
 
 .selected p {
   color: #fff;
 }
 
-.annotationsSettingsFocus {
-  background-color: rgb(191, 200, 211);
+.annotationsSettingsHover {
+  background-color: #bfc8d3;
 }
+
+/* .addCustomScrollbar {
+  scrollbar-color: rgb(212 212 212) rgb(45 212 191);
+  scrollbar-width: thin;
+  padding-right: 10px;
+}
+
+.addCustomScrollbar::-webkit-scrollbar {
+  width: 10px;
+}
+
+.addCustomScrollbar::-webkit-scrollbar-track {
+  background-color: rgb(212 212 212);
+}
+
+
+.addCustomScrollbar::-webkit-scrollbar-thumb {
+  background-color: rgb(45 212 191);
+  border-radius: 100px;
+} */
