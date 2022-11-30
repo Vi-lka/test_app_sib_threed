@@ -1,0 +1,42 @@
+.ruler-container {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 50px;
+    margin: 15px;
+    cursor: pointer;
+    text-align: center;
+    -webkit-user-select: none; /* Safari */
+    -ms-user-select: none; /* IE 10+ */
+    user-select: none;
+}
+
+.ruler-container * {
+    -webkit-user-select: none; /* Safari */
+    -ms-user-select: none; /* IE 10+ */
+    user-select: none;
+}
+
+.ruler-icon {
+    padding: 5px;
+    background: transparent;
+    border-radius: 10px;
+    transition: 0.15s;
+}
+
+.ruler-icon:hover {
+    padding: 8px;
+    transition: 0.15s;
+}
+
+.ruler-icon-active {
+    padding: 8px;
+    background: rgba(45, 212, 190, 1);
+    border-radius: 10px;
+    transition: 0.15s;
+}
+
+.ruler-container p.ruler-state {
+    font-size: 11px;
+    line-height: 1.2;
+}

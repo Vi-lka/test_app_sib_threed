@@ -13,9 +13,14 @@ import null_texture from './models/null_texture.png'
 import null_texture_normal from './models/null_texture_normal.png'
 import annotation_icon from './models/annotation-icon.png'
 import delete_icon from './models/delete-icon.png'
+import ruler_icon from './models/ruler.png'
 import { Color, Depth, LayerMaterial } from 'lamina';
 import AnnotationsMap from './components/annotationsMap/AnnotationsMap';
 import { Console } from 'console';
+import Measuring from './components/measuring/MeasuringButton';
+import { CSS2DObject, CSS2DRenderer } from 'three/examples/jsm/renderers/CSS2DRenderer';
+import { isConstructorDeclaration } from 'typescript';
+import MeasuringButton from './components/measuring/MeasuringButton';
 
 function App() {
 
@@ -48,8 +53,9 @@ function App() {
   // set Screenshot 
   const [screenshot, setScreenshot] = useState<any | null>(null)
 
-  // set Annotation Mode 
+  // set Modes 
   const [annotationMode, setAnnotationMode] = useState<boolean>(false)
+  const [measuringMode, setMeasuringMode] = useState<boolean>(false)
 
   // Global Annotations states
   const [counter, setCounter] = useState<number>(0)
@@ -60,7 +66,8 @@ function App() {
 
   const [selectedAnnotation, setSelectedAnnotation] = useState<number>((counter - 1))
 
-  const [updateState, setUpdateState] = useState<boolean>(false)
+  // Measuring counter
+  const [counterMeasuring, setCounterMeasuring] = useState<number>(0)
 
   // Global handles
   const handleDeleteAnnotation = (data: any, i: number) => {
@@ -109,7 +116,8 @@ function App() {
     const stateThree = useThree()
 
     const toast = useToast()
-    const idToast = 'id-toast'
+    const idToastAnnotations = 'toast-annotations'
+    const idToastMeasuring = 'toast-measuring'
 
     const [textHovered, setTextHovered] = useState(false)
 
@@ -202,14 +210,12 @@ function App() {
     })
 
     const handlePlaceAnnotation = () => {
-
       if (counter < maxCounter) {
         setCounter(counter + 1)
         annotations[counter] = {position: n, title: "", info: ""}
         setSelectedAnnotation(counter)
         setAnnotations(annotations)
       }
-
     }
 
     const handleTextHovered = (e: any) => {
@@ -221,12 +227,14 @@ function App() {
     }
 
     const handleImgAnnotationHoverEnter = (i: number) => {
+      stateThree.gl.domElement.style.cursor = 'pointer'
       if (i !== selectedAnnotation) {
         annotationsSettingsRefs[i].current?.classList.add('annotationsSettingsHover')
       }
     }
 
     const handleImgAnnotationHoverLeave = (i: number) => {
+      stateThree.gl.domElement.style.cursor = 'auto'
       annotationsSettingsRefs[i].current?.classList.remove('annotationsSettingsHover')
     }
 
@@ -243,9 +251,9 @@ function App() {
 
   useEffect(() => {
     stateThree.gl.domElement.addEventListener( 'dblclick', function () {
-      if ( annotationMode && (moved === false) && (intersection.intersects) && (textHovered === false) && (counter === maxCounter) && (!toast.isActive(idToast))) {
+      if ( annotationMode && (moved === false) && (intersection.intersects) && (textHovered === false) && (counter === maxCounter) && (!toast.isActive(idToastAnnotations))) {
         toast({
-          id: idToast,
+          id: idToastAnnotations,
           title: "Внимание!",
           description: `Можно добавлять не более ${maxCounter} аннотаций`,
           status: "warning",
@@ -257,9 +265,6 @@ function App() {
   }, [counter])
 
     useFrame((state) => {
-
-      // console.log(`moved: ${moved}`)
-      // console.log(`textHovered: ${textHovered}`)
 
       setloadingState(active)
 
@@ -288,8 +293,6 @@ function App() {
           line.geometry.attributes.position!.setXYZ( 0, p.x, p.y, p.z );
           line.geometry.attributes.position!.setXYZ( 1, (n.x), (n.y), (n.z) );
           line.geometry.attributes.position!.needsUpdate = true;
-
-          // intersects[ 0 ]!.object.
   
           intersection.intersects = true;
   
@@ -307,6 +310,160 @@ function App() {
 
       }
     })
+
+    // Measuring
+    const labelRenderer = new CSS2DRenderer()
+    labelRenderer.domElement.id = 'labelDiv'
+    labelRenderer.setSize(stateThree.size.width, stateThree.size.height)
+    labelRenderer.domElement.style.position = 'absolute'
+    labelRenderer.domElement.style.top = '0px'
+    labelRenderer.domElement.style.right = '0px'
+    labelRenderer.domElement.style.pointerEvents = 'none'
+    document.body.appendChild(labelRenderer.domElement)
+
+    function onWindowResize() {
+      labelRenderer.setSize(stateThree.size.width, stateThree.size.height)
+    }
+    window.addEventListener('resize', onWindowResize, false)
+
+    const geometryBox = new THREE.BoxGeometry( sceneSize.x/90, sceneSize.y/90, sceneSize.z/90 )
+    const materialBox = new THREE.MeshBasicMaterial( {color: 0xe01414, transparent: true, opacity: 0.5, depthTest: false} )
+    const materialLine = new THREE.LineBasicMaterial( {color: 0xe01414, transparent: false, depthTest: false} )
+
+    let lineId = 0
+    let lineMeasuring: THREE.Line
+    let boxMeasuringStart: THREE.Mesh
+    let boxMeasuringEnd: THREE.Mesh
+    let drawingLine = false
+
+    let measurementLabels: { [key: number]: CSS2DObject } = {}
+
+    function handleMeasurement() {
+      if ( (intersects && intersects.length > 0) && measuringMode ) {
+        if (!drawingLine) {
+           //start the line
+          stateThree.scene.add(boxMeasuringStart)
+          stateThree.scene.add(boxMeasuringEnd)
+          stateThree.scene.add(lineMeasuring)
+          stateThree.scene.add(measurementLabels[lineId])
+
+          drawingLine = true
+        } else {
+          //finish the line
+          lineId++
+          drawingLine = false
+        }
+      }
+    }
+
+    stateThree.gl.domElement.addEventListener('pointerdown', handleMeasurement, false)
+
+    const handleDeleteMeasurement = () => {
+      lineId = 0
+      measurementLabels = {}
+      stateThree.scene.children.forEach((object) => {
+        if ((object.name === 'measurementLabel') || (object.name === 'lineMeasuring') || (object.name === 'boxMeasuring')) {
+          stateThree.scene.remove(object)
+        }
+      })
+    }
+
+    window.addEventListener('keydown', function (event) {
+      if ((event.key === 'Backspace')) {
+        handleDeleteMeasurement()
+      }
+    }, false)
+
+    useEffect(() => {
+      stateThree.gl.domElement.style.cursor = measuringMode ? 'crosshair' : 'auto'
+    }, [measuringMode])
+
+    useFrame((state) => {
+
+      labelRenderer.render(state.scene, state.camera)
+  
+      if (measuringMode) {
+
+        state.raycaster.intersectObject( gltf.scene.children[0]!, true, intersects )
+
+        if ( intersects && intersects.length > 0 ) {
+
+          if (!drawingLine) {
+            //start the line
+            const points: any = []
+            points.push(intersects[0].point)
+            points.push(intersects[0].point.clone())
+            const geometryMeasuring = new THREE.BufferGeometry().setFromPoints(points)
+            lineMeasuring = new THREE.LineSegments(geometryMeasuring, materialLine)
+            lineMeasuring.frustumCulled = false
+
+            boxMeasuringStart = new THREE.Mesh(geometryBox, materialBox)
+            boxMeasuringEnd = new THREE.Mesh(geometryBox, materialBox)
+
+            const measurementDiv = document.createElement('div') as HTMLDivElement
+            measurementDiv.className = 'measurementLabel'
+            measurementDiv.innerText = '0.0'
+            const measurementLabel = new CSS2DObject(measurementDiv)
+            measurementLabel.position.copy(intersects[0].point)
+            measurementLabels[lineId] = measurementLabel
+
+            lineMeasuring.name = 'lineMeasuring'
+            boxMeasuringStart.name = 'boxMeasuring'
+            boxMeasuringEnd.name = 'boxMeasuring'
+            measurementLabels[lineId].name = 'measurementLabel'
+          } else {
+            //finish the line
+            const positions = lineMeasuring.geometry.attributes.position.array as Array<number>
+            positions[3] = intersects![0].point.x
+            positions[4] = intersects![0].point.y
+            positions[5] = intersects![0].point.z
+            lineMeasuring.geometry.attributes.position.needsUpdate = true
+            
+            const v0 = new THREE.Vector3(
+                positions[0],
+                positions[1],
+                positions[2]
+            )
+            const v1 = new THREE.Vector3(
+              intersects![0].point.x,
+              intersects![0].point.y,
+              intersects![0].point.z
+            )
+
+            boxMeasuringStart.position.copy(v0)
+            boxMeasuringEnd.position.copy(v1)
+
+            const distance = v0.distanceTo(v1)
+            if (measurementLabels[lineId].element) {
+              measurementLabels[lineId].element.innerText = distance.toFixed(2)
+              measurementLabels[lineId].position.lerpVectors(v0, v1, 0.5)
+            }
+          }
+  
+        } else {
+          intersection.intersects = false;
+        }
+
+      } else {
+        handleDeleteMeasurement()
+        if ( intersects && intersects.length > 0 ) {
+          intersects.length = 0;
+          intersection.intersects = false;
+        }
+      }
+    })
+
+    if ( (counterMeasuring <= 1) && measuringMode && (!toast.isActive(idToastMeasuring))) {
+      toast({
+        id: idToastMeasuring,
+        title: "Удалить линейку?",
+        description: 'Нажмите клавишу "Backspace" чтобы удалить все линейки',
+        status: "info",
+        duration: 15000,
+        position: "top-left",
+        isClosable: true,
+      })
+    }
 
     return (
       <>
@@ -343,8 +500,7 @@ function App() {
             selectedAnnotation={selectedAnnotation}
             handleImgAnnotationHoverEnter={handleImgAnnotationHoverEnter}
             handleImgAnnotationHoverLeave={handleImgAnnotationHoverLeave}
-          />
-
+        />
         <OrbitControls 
           enabled={!textHovered} 
           enableDamping={false} 
@@ -425,7 +581,6 @@ function App() {
                         </Html>
                       }
                     >
-                    
                       {/* <ambientLight intensity={1} /> */}
                       <Scene />
                       <Environment resolution={256}>
@@ -448,6 +603,21 @@ function App() {
                       <Preload all />
                     </Suspense>
                   </Canvas>
+                  {!annotationMode && 
+                    <MeasuringButton 
+                      rulerIcon={ruler_icon}
+                      onClick={(e: any) => {
+                        setMeasuringMode(!measuringMode)
+                        setCounterMeasuring(counterMeasuring + 1)
+                        // if (annotationMode && !measuringMode) {
+                        //   setAnnotationMode(false)
+                        // } else {
+                        //   setAnnotationMode(true)
+                        // }
+                      }} 
+                      measuringMode={measuringMode}
+                    />
+                  }
                 </div>
 
                 <form className="editForm3DSettings w-1/4 h-screen px-2 py-4 bg-neutral-50 border-r-2 border-gray-100 overflow-hidden">
@@ -486,14 +656,19 @@ function App() {
                       <TabList >
                         <Tab 
                           _selected={{ color: 'white', bg: 'teal.500' }}
-                          onClick={(e: any) => {setAnnotationMode(false)}}
+                          onClick={(e: any) => {
+                            setAnnotationMode(false)
+                          }}
                         >
                           Materials
                         </Tab>
                         <Tab 
                           isDisabled={loadingState}
                           _selected={{ color: 'white', bg: 'teal.500' }}
-                          onClick={(e: any) => {setAnnotationMode(true)}}
+                          onClick={(e: any) => {
+                            setAnnotationMode(true)
+                            setMeasuringMode(false)
+                          }}
                         >
                           Annotations
                         </Tab>

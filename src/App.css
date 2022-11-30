@@ -349,3 +349,16 @@ input[type=range].Rangemap:active::-ms-track {
   background-color: rgb(45 212 191);
   border-radius: 100px;
 } */
+
+#labelDiv {
+  font-size: 14px;
+}
+
+.measurementLabel {
+  font-size: 14px;
+  font-weight: 400;
+  background-color: rgba(0, 0, 0, 0.6);
+  color: #ffffff;
+  padding: 4px 6px;
+  border-radius: 6px;
+}

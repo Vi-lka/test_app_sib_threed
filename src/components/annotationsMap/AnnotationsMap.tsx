@@ -25,8 +25,6 @@ export type AnnotationsMapProps = {
 export default function AnnotationsMap(props: AnnotationsMapProps) {
   const stateThree = useThree()
 
-  const [imgHovered, setImgHovered] = useState(false)
-  // const [selectedAnnotation, setSelectedAnnotation] = useState<number>((props.range - 1))
   const [controlsChange, setControlsChange] = useState(false)
 
   const [annotations, setAnnotations] = useState(props.annotationsData)
@@ -70,10 +68,6 @@ export default function AnnotationsMap(props: AnnotationsMapProps) {
   stateThree.controls?.addEventListener('start', handleOnStartControls)
   // stateThree.controls?.addEventListener('end', handleOnEndControls)
 
-  useEffect(() => {
-    document.body.style.cursor = imgHovered ? 'pointer' : 'auto'
-  }, [imgHovered])
-
   useFrame((state) => {
 
     annotationsIconsRefs.forEach((element: any) => element.current?.lookAt(state.camera.position))
@@ -81,7 +75,6 @@ export default function AnnotationsMap(props: AnnotationsMapProps) {
     annotationsTextRefs.forEach(handleAnnotationsTextClassList)
 
   })
-
   
   return (
     <>
@@ -97,20 +90,24 @@ export default function AnnotationsMap(props: AnnotationsMapProps) {
               opacity={props.opacity}
               onPointerOver={(e: any) => {
                 e.stopPropagation()
-                setImgHovered(true)
-                annotationsIconsRefs[i].current!.scale.set(props.scale*1.3, props.scale*1.3, 1)
-                props.handleImgAnnotationHoverEnter(i)
+                if  (props.annotationMode) {
+                  annotationsIconsRefs[i].current!.scale.set(props.scale*1.3, props.scale*1.3, 1)
+                  props.handleImgAnnotationHoverEnter(i)
+                }
               }}
               onPointerOut={(e: any) => {
                 e.stopPropagation()
-                setImgHovered(false)
-                annotationsIconsRefs[i].current!.scale.set(props.scale, props.scale, 1)
-                props.handleImgAnnotationHoverLeave(i)
+                if (props.annotationMode) {
+                  annotationsIconsRefs[i].current!.scale.set(props.scale, props.scale, 1)
+                  props.handleImgAnnotationHoverLeave(i)
+                }
               }}
               onClick={(e: any) => {
                 e.stopPropagation()
-                props.handleSelectAnnotation(i)
-                handleOnEndControls()
+                if (props.annotationMode) {
+                  props.handleSelectAnnotation(i)
+                  handleOnEndControls()
+                }
               }}
             />
         ))}
