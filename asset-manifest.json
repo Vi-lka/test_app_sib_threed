@@ -1,18 +1,19 @@
 {
   "files": {
-    "main.css": "/test_app_sib_threed/static/css/main.2de69e11.css",
-    "main.js": "/test_app_sib_threed/static/js/main.06760972.js",
+    "main.css": "/test_app_sib_threed/static/css/main.431cb7d6.css",
+    "main.js": "/test_app_sib_threed/static/js/main.6792cc4e.js",
     "static/js/787.63e8970d.chunk.js": "/test_app_sib_threed/static/js/787.63e8970d.chunk.js",
     "static/media/null_texture_normal.png": "/test_app_sib_threed/static/media/null_texture_normal.3d23313cea1c826fe27b.png",
     "static/media/null_texture.png": "/test_app_sib_threed/static/media/null_texture.9a3dcd69826376c41bf4.png",
+    "static/media/ruler.png": "/test_app_sib_threed/static/media/ruler.0a440b1a197ad39fa500.png",
     "static/media/annotation-icon.png": "/test_app_sib_threed/static/media/annotation-icon.4973f33ba0cdd95e00bb.png",
     "index.html": "/test_app_sib_threed/index.html",
-    "main.2de69e11.css.map": "/test_app_sib_threed/static/css/main.2de69e11.css.map",
-    "main.06760972.js.map": "/test_app_sib_threed/static/js/main.06760972.js.map",
+    "main.431cb7d6.css.map": "/test_app_sib_threed/static/css/main.431cb7d6.css.map",
+    "main.6792cc4e.js.map": "/test_app_sib_threed/static/js/main.6792cc4e.js.map",
     "787.63e8970d.chunk.js.map": "/test_app_sib_threed/static/js/787.63e8970d.chunk.js.map"
   },
   "entrypoints": [
-    "static/css/main.2de69e11.css",
-    "static/js/main.06760972.js"
+    "static/css/main.431cb7d6.css",
+    "static/js/main.6792cc4e.js"
   ]
 }
